@@ -25,10 +25,9 @@ import {
 } from "@react-three/rapier";
 import { MeshLineGeometry, MeshLineMaterial } from "meshline";
 import * as THREE from "three";
-
-// Serve the model from the public directory to avoid requiring a GLB module declaration.
-const cardGLB = "/card.glb";
 import lanyard from "./lanyard.png";
+
+const cardGLB = new URL("./card.glb", import.meta.url).href;
 
 extend({ MeshLineGeometry, MeshLineMaterial });
 

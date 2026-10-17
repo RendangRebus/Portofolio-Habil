@@ -73,8 +73,12 @@ type Theme = "light" | "dark";
 function getInitialTheme(): Theme {
   if (typeof window === "undefined") return "dark";
 
-  const saved = localStorage.getItem("theme");
-  if (saved === "light" || saved === "dark") return saved;
+  try {
+    const saved = localStorage.getItem("theme");
+    if (saved === "light" || saved === "dark") return saved;
+  } catch (e) {
+    console.error("Failed to read theme from localStorage", e);
+  }
 
   return "dark";
 }
@@ -1154,7 +1158,11 @@ function App() {
 
   useLayoutEffect(() => {
     document.documentElement.classList.toggle("dark", isDark);
-    localStorage.setItem("theme", theme);
+    try {
+      localStorage.setItem("theme", theme);
+    } catch (e) {
+      console.warn("Failed to save theme to localStorage:", e);
+    }
   }, [theme, isDark]);
 
   const techLogos = useMemo(
