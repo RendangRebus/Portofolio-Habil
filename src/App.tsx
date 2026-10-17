@@ -63,6 +63,7 @@ import { AnimatedThemeToggler } from "./components/ui/animated-theme-toggler";
 import { AnimatedBeam } from "./components/ui/animated-beam";
 import ImageSlider from "./components/ImageSlider";
 import { Badge } from "./components/ui/badge";
+import type { IconType } from "react-icons";
 
 const asset = (path: string) =>
   encodeURI(`${import.meta.env.BASE_URL}${path.replace(/^\//, "")}`);
@@ -71,10 +72,9 @@ type Theme = "light" | "dark";
 
 function getInitialTheme(): Theme {
   if (typeof window === "undefined") return "dark";
-  try {
-    const saved = localStorage.getItem("theme");
-    if (saved === "light" || saved === "dark") return saved;
-  } catch {}
+
+  const saved = localStorage.getItem("theme");
+  if (saved === "light" || saved === "dark") return saved;
 
   return "dark";
 }
@@ -92,7 +92,7 @@ const pill = (icon: React.ReactNode, label: string, color: string) => (
   </span>
 );
 
-const heroStack: { name: string; icon: React.ElementType; color: string }[] = [
+const heroStack: { name: string; icon: IconType; color: string }[] = [
   { name: "React.js", icon: SiReact, color: "#61DAFB" },
   { name: "TypeScript", icon: SiTypescript, color: "#3178C6" },
   { name: "JavaScript", icon: SiJavascript, color: "#F7DF1E" },
@@ -292,7 +292,7 @@ const kindMeta: Record<
   EntryKind,
   {
     label: string;
-    icon: React.ElementType;
+    icon: IconType;
 
     bg?: string;
     featuresTitle: string;
@@ -347,7 +347,7 @@ function entryLinks(entry: Entry) {
     modalLabel: string;
     href: string;
     code: boolean;
-    icon: React.ElementType;
+    icon: IconType;
   }[] = [];
   if (entry.github)
     links.push({
@@ -384,7 +384,7 @@ function entryLinks(entry: Entry) {
   return links;
 }
 
-const techIcons: Record<string, { icon: React.ElementType; color?: string }> = {
+const techIcons: Record<string, { icon: IconType; color?: string }> = {
   react: { icon: SiReact, color: "#61DAFB" },
   "react.js": { icon: SiReact, color: "#61DAFB" },
   "next.js": { icon: SiNextdotjs },
@@ -410,7 +410,9 @@ function TechBadge({ tag }: { tag: string }) {
   const Icon = entry?.icon ?? FiCode;
   return (
     <Badge variant="outline" className="h-6 gap-1.5 px-2.5">
-      <Icon style={entry?.color ? { color: entry.color } : undefined} />
+      <span style={entry?.color ? { color: entry.color } : undefined}>
+        <Icon />
+      </span>
       {tag}
     </Badge>
   );
@@ -655,7 +657,7 @@ function EntryModal({ entry, onClose }: { entry: Entry; onClose: () => void }) {
 type SkillTool = {
   name: string;
   group: string;
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }>;
   color: string;
   accent: string;
 };
@@ -1152,9 +1154,7 @@ function App() {
 
   useLayoutEffect(() => {
     document.documentElement.classList.toggle("dark", isDark);
-    try {
-      localStorage.setItem("theme", theme);
-    } catch {}
+    localStorage.setItem("theme", theme);
   }, [theme, isDark]);
 
   const techLogos = useMemo(
@@ -1273,7 +1273,6 @@ function App() {
             direction="diagonal"
             borderColor={isDark ? "#505050" : "#d4d4d8"}
             hoverFillColor={isDark ? "#222" : "#e4e4e7"}
-            vignetteColor={isDark ? "#000000" : "#fafafa"}
             shape="square"
             hoverTrailAmount={0}
           />

@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unknown-property */
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -27,8 +26,8 @@ import {
 import { MeshLineGeometry, MeshLineMaterial } from "meshline";
 import * as THREE from "three";
 
-// replace with your own imports, see the usage snippet for details
-import cardGLB from "./card.glb";
+// Serve the model from the public directory to avoid requiring a GLB module declaration.
+const cardGLB = "/card.glb";
 import lanyard from "./lanyard.png";
 
 extend({ MeshLineGeometry, MeshLineMaterial });
@@ -205,8 +204,20 @@ function Band({
     return body.lerped;
   };
 
-  const { nodes, materials } = useGLTF(cardGLB) as any;
-  const texture = useTexture(lanyardImage || lanyard);
+  const { nodes, materials } = useGLTF(cardGLB) as unknown as {
+    nodes: {
+      card: THREE.Mesh;
+      clip: THREE.Mesh;
+      clamp: THREE.Mesh;
+    };
+    materials: {
+      base: THREE.MeshStandardMaterial;
+      metal: THREE.MeshStandardMaterial;
+    };
+  };
+  const texture = useTexture(lanyardImage || lanyard, (loadedTexture) => {
+    loadedTexture.wrapS = loadedTexture.wrapT = THREE.RepeatWrapping;
+  });
   // useTexture must be called unconditionally; use a blank pixel when an image
   // isn't supplied for a given face, then skip compositing it below.
   const frontTex = useTexture(frontImage || BLANK_PIXEL);
@@ -218,7 +229,10 @@ function Band({
     const baseMap = materials.base.map as THREE.Texture;
     if (!frontImage && !backImage) return baseMap;
 
-    const baseImg = baseMap.image as any;
+    const baseImg = baseMap.image as CanvasImageSource & {
+      width: number;
+      height: number;
+    };
     const W = baseImg.width;
     const H = baseImg.height;
     const canvas = document.createElement("canvas");
@@ -229,7 +243,10 @@ function Band({
     // Keep the original baked atlas for the card edges and any untouched face.
     ctx.drawImage(baseImg, 0, 0, W, H);
 
-    const drawFitted = (img: any, rect: typeof FRONT_UV_RECT) => {
+    const drawFitted = (
+      img: CanvasImageSource & { width: number; height: number },
+      rect: typeof FRONT_UV_RECT,
+    ) => {
       const rx = rect.x * W;
       const ry = rect.y * H;
       const rw = rect.w * W;
@@ -248,8 +265,16 @@ function Band({
       ctx.restore();
     };
 
-    if (frontImage && frontTex.image) drawFitted(frontTex.image, FRONT_UV_RECT);
-    if (backImage && backTex.image) drawFitted(backTex.image, BACK_UV_RECT);
+    if (frontImage && frontTex.image)
+      drawFitted(
+        frontTex.image as CanvasImageSource & { width: number; height: number },
+        FRONT_UV_RECT,
+      );
+    if (backImage && backTex.image)
+      drawFitted(
+        backTex.image as CanvasImageSource & { width: number; height: number },
+        BACK_UV_RECT,
+      );
 
     const composite = new THREE.CanvasTexture(canvas);
     composite.colorSpace = THREE.SRGBColorSpace;
@@ -259,13 +284,16 @@ function Band({
     return composite;
   }, [frontImage, backImage, imageFit, frontTex, backTex, materials.base.map]);
   const [curve] = useState(
-    () =>
-      new THREE.CatmullRomCurve3([
+    () => {
+      const curve = new THREE.CatmullRomCurve3([
         new THREE.Vector3(),
         new THREE.Vector3(),
         new THREE.Vector3(),
         new THREE.Vector3(),
-      ]),
+      ]);
+      curve.curveType = "chordal";
+      return curve;
+    },
   );
   const [dragged, drag] = useState<false | THREE.Vector3>(false);
   const [hovered, hover] = useState(false);
@@ -324,9 +352,6 @@ function Band({
       );
     }
   });
-
-  curve.curveType = "chordal";
-  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
 
   return (
     <>
