@@ -62,6 +62,8 @@ interface LanyardProps {
   imageFit?: "cover" | "contain";
   lanyardImage?: string | null;
   lanyardWidth?: number;
+  /** Panjang tiap segmen tali (ada 3 segmen). Default 1, makin kecil makin pendek. */
+  ropeLength?: number;
 }
 
 export default function Lanyard({
@@ -74,6 +76,7 @@ export default function Lanyard({
   imageFit = "cover",
   lanyardImage = null,
   lanyardWidth = 1,
+  ropeLength = 1,
 }: LanyardProps) {
   const [isMobile, setIsMobile] = useState<boolean>(
     () => typeof window !== "undefined" && window.innerWidth < 768,
@@ -104,6 +107,7 @@ export default function Lanyard({
             imageFit={imageFit}
             lanyardImage={lanyardImage}
             lanyardWidth={lanyardWidth}
+            ropeLength={ropeLength}
           />
         </Physics>
         <Environment blur={0.75}>
@@ -150,6 +154,7 @@ interface BandProps {
   imageFit?: "cover" | "contain";
   lanyardImage?: string | null;
   lanyardWidth?: number;
+  ropeLength?: number;
 }
 
 type LanyardRigidBody = RapierRigidBody & {
@@ -165,6 +170,7 @@ function Band({
   imageFit = "cover",
   lanyardImage = null,
   lanyardWidth = 1,
+  ropeLength = 1,
 }: BandProps) {
   const band = useRef<
     THREE.Mesh<
@@ -264,9 +270,9 @@ function Band({
   const [dragged, drag] = useState<false | THREE.Vector3>(false);
   const [hovered, hover] = useState(false);
 
-  useRopeJoint(fixed, j1, [[0, 0, 0], [0, 0, 0], 1]);
-  useRopeJoint(j1, j2, [[0, 0, 0], [0, 0, 0], 1]);
-  useRopeJoint(j2, j3, [[0, 0, 0], [0, 0, 0], 1]);
+  useRopeJoint(fixed, j1, [[0, 0, 0], [0, 0, 0], ropeLength]);
+  useRopeJoint(j1, j2, [[0, 0, 0], [0, 0, 0], ropeLength]);
+  useRopeJoint(j2, j3, [[0, 0, 0], [0, 0, 0], ropeLength]);
   useSphericalJoint(j3, card, [
     [0, 0, 0],
     [0, 1.45, 0],
@@ -327,7 +333,7 @@ function Band({
       <group position={[0, 4, 0]}>
         <RigidBody ref={fixed} {...segmentProps} type="fixed" />
         <RigidBody
-          position={[0.5, 0, 0]}
+          position={[0.5 * ropeLength, 0, 0]}
           ref={j1}
           {...segmentProps}
           type="dynamic"
@@ -335,7 +341,7 @@ function Band({
           <BallCollider args={[0.1]} />
         </RigidBody>
         <RigidBody
-          position={[1, 0, 0]}
+          position={[1 * ropeLength, 0, 0]}
           ref={j2}
           {...segmentProps}
           type="dynamic"
@@ -343,7 +349,7 @@ function Band({
           <BallCollider args={[0.1]} />
         </RigidBody>
         <RigidBody
-          position={[1.5, 0, 0]}
+          position={[1.5 * ropeLength, 0, 0]}
           ref={j3}
           {...segmentProps}
           type="dynamic"
@@ -351,7 +357,7 @@ function Band({
           <BallCollider args={[0.1]} />
         </RigidBody>
         <RigidBody
-          position={[2, 0, 0]}
+          position={[2 * ropeLength, 0, 0]}
           ref={card}
           {...segmentProps}
           type={dragged ? "kinematicPosition" : "dynamic"}

@@ -23,6 +23,8 @@ export type DockItemData = {
   label: React.ReactNode;
   onClick: () => void;
   className?: string;
+  /** Menampilkan pembatas setelah item ini */
+  separatorAfter?: boolean;
 };
 
 export type DockProps = {
@@ -97,7 +99,7 @@ function DockItem({
       onBlur={() => isHovered.set(0)}
       onClick={onClick}
       onKeyDown={handleKeyDown}
-      className={`relative inline-flex items-center justify-center rounded-lg bg-[#120F17] border-neutral-700 border-2 shadow-md ${className}`}
+      className={`relative inline-flex items-center justify-center rounded-xl border border-black/15 bg-white/70 text-neutral-900 shadow-lg shadow-black/10 backdrop-blur-md transition-colors hover:bg-white/85 dark:border-white/15 dark:bg-[#120F17]/85 dark:text-white dark:shadow-black/30 dark:hover:bg-[#18151f]/95 ${className}`}
       tabIndex={0}
       role="button"
       aria-haspopup="true"
@@ -140,7 +142,7 @@ function DockLabel({ children, className = "", isHovered }: DockLabelProps) {
           animate={{ opacity: 1, y: -10 }}
           exit={{ opacity: 0, y: 0 }}
           transition={{ duration: 0.2 }}
-          className={`${className} absolute -top-6 left-1/2 w-fit whitespace-pre rounded-md border border-neutral-700 bg-[#120F17] px-2 py-0.5 text-xs text-white`}
+          className={`${className} absolute -top-6 left-1/2 w-fit whitespace-pre rounded-md border border-black/10 bg-white/90 px-2 py-0.5 text-xs text-neutral-900 shadow-md backdrop-blur-md dark:border-white/10 dark:bg-[#120F17]/95 dark:text-white`}
           role="tooltip"
           style={{ x: "-50%" }}
         >
@@ -199,26 +201,34 @@ export default function Dock({
           isHovered.set(0);
           mouseX.set(Infinity);
         }}
-        className={`${className} absolute bottom-2 left-1/2 transform -translate-x-1/2 flex items-end w-fit gap-4 rounded-2xl border-neutral-700 border-2 pb-2 px-4`}
+        className={`${className} absolute bottom-2 left-1/2 flex w-fit -translate-x-1/2 items-end gap-3 rounded-2xl border border-black/15 bg-white/55 px-3 pb-2 text-neutral-900 shadow-xl shadow-black/10 backdrop-blur-xl dark:border-white/15 dark:bg-black/45 dark:text-white dark:shadow-black/30 md:gap-4 md:px-4`}
         style={{ height: panelHeight }}
         role="toolbar"
         aria-label="Application dock"
       >
         {items.map((item, index) => (
-          <DockItem
-            key={index}
-            onClick={item.onClick}
-            className={item.className}
-            mouseX={mouseX}
-            spring={spring}
-            distance={distance}
-            magnification={magnification}
-            baseItemSize={baseItemSize}
-            label={item.label}
-          >
-            <DockIcon>{item.icon}</DockIcon>
-            <DockLabel>{item.label}</DockLabel>
-          </DockItem>
+          <React.Fragment key={index}>
+            <DockItem
+              onClick={item.onClick}
+              className={item.className}
+              mouseX={mouseX}
+              spring={spring}
+              distance={distance}
+              magnification={magnification}
+              baseItemSize={baseItemSize}
+              label={item.label}
+            >
+              <DockIcon>{item.icon}</DockIcon>
+              <DockLabel>{item.label}</DockLabel>
+            </DockItem>
+
+            {item.separatorAfter && (
+              <div
+                aria-hidden="true"
+                className="mx-0.5 h-10 w-px shrink-0 self-center bg-black/15 dark:bg-white/15"
+              />
+            )}
+          </React.Fragment>
         ))}
       </motion.div>
     </motion.div>

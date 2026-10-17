@@ -141,13 +141,18 @@ const ClickSpark: React.FC<ClickSparkProps> = ({
   ]);
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>): void => {
+    // Abaikan click buatan seperti element.click()
+    if (e.clientX === 0 && e.clientY === 0) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
+
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
     const now = performance.now();
+
     const newSparks: Spark[] = Array.from({ length: sparkCount }, (_, i) => ({
       x,
       y,
