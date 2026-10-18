@@ -41,6 +41,19 @@ if (typeof document !== "undefined" && !document.getElementById(KEYFRAMES_ID)) {
   const style = document.createElement("style");
   style.id = KEYFRAMES_ID;
   style.textContent = `
+    .pc-card {
+      height: 80svh;
+      max-height: 540px;
+      aspect-ratio: 0.718;
+    }
+    @media (max-width: 480px) {
+      .pc-card {
+        width: 100%;
+        height: auto;
+        max-height: none;
+        aspect-ratio: 0.718;
+      }
+    }
     @keyframes pc-holo-bg {
       0% { background-position: 0 var(--background-y), 0 0, center; }
       100% { background-position: 0 var(--background-y), 90% 90%, center; }
@@ -513,11 +526,8 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
       )}
       <div ref={shellRef} className="relative z-[1] group">
         <section
-          className="grid relative overflow-hidden"
+          className="pc-card grid relative overflow-hidden"
           style={{
-            height: "80svh",
-            maxHeight: "540px",
-            aspectRatio: "0.718",
             borderRadius: cardRadius,
             backgroundBlendMode: "color-dodge, normal, normal, normal",
             boxShadow:
