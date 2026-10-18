@@ -1364,34 +1364,38 @@ function App() {
                   fontStretch: isMobile ? "100%" : "125%",
                 }}
               >
-                <FoldText
-                  text="Full Stack"
-                  splitBy="char"
-                  hinge="top"
-                  trigger="mount"
-                  duration={0.65}
-                  stagger={0.045}
-                  ease="power3.out"
-                  perspective={700}
-                  creaseShading={0.55}
-                  fontSize={heroFontSize}
-                  fontWeight={900}
-                  color={isDark ? "#f4f4f4" : "#171717"}
-                />
-                <FoldText
-                  text="Developer"
-                  splitBy="char"
-                  hinge="top"
-                  trigger="mount"
-                  duration={0.65}
-                  stagger={0.045}
-                  ease="power3.out"
-                  perspective={700}
-                  creaseShading={0.55}
-                  fontSize={heroFontSize}
-                  fontWeight={900}
-                  color={isDark ? "#8a8a8a" : "#737373"}
-                />
+                <div>
+                  <FoldText
+                    text="Full Stack"
+                    splitBy="char"
+                    hinge="top"
+                    trigger="mount"
+                    duration={0.65}
+                    stagger={0.045}
+                    ease="power3.out"
+                    perspective={700}
+                    creaseShading={0.55}
+                    fontSize={heroFontSize}
+                    fontWeight={900}
+                    color={isDark ? "#f4f4f4" : "#171717"}
+                  />
+                </div>
+                <div>
+                  <FoldText
+                    text="Developer"
+                    splitBy="char"
+                    hinge="top"
+                    trigger="mount"
+                    duration={0.65}
+                    stagger={0.045}
+                    ease="power3.out"
+                    perspective={700}
+                    creaseShading={0.55}
+                    fontSize={heroFontSize}
+                    fontWeight={900}
+                    color={isDark ? "#8a8a8a" : "#737373"}
+                  />
+                </div>
               </div>
 
               <p className="mt-6 font-mono text-lg">
