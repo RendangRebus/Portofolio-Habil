@@ -1349,9 +1349,9 @@ function App() {
         <div className="relative z-10">
           <section
             id="home"
-            className="mx-auto grid min-h-dvh max-w-7xl snap-start items-start gap-0 px-6 pb-40 pt-16 md:grid-cols-[minmax(0,760px)_420px] md:justify-start md:px-12"
+            className="mx-auto grid min-h-dvh max-w-7xl grid-cols-[minmax(0,1fr)] snap-start items-start gap-0 px-6 pb-40 pt-16 md:grid-cols-[minmax(0,760px)_420px] md:justify-start md:px-12"
           >
-            <div className="pt-10 md:pt-12">
+            <div className="min-w-0 pt-10 md:pt-12">
               <div
                 className={`flex items-center gap-2 font-mono text-sm tracking-[0.2em] ${mutedText}`}
               >
@@ -1364,7 +1364,7 @@ function App() {
               </h1>
 
               <div
-                className="mt-4 leading-[0.9]"
+                className="mt-4 max-w-full leading-[0.9]"
                 style={{
                   fontFamily: "'Archivo', sans-serif",
                   fontStretch: isMobile ? "100%" : "125%",
@@ -1415,7 +1415,7 @@ function App() {
               </p>
 
               <div
-                className="mt-10 max-w-[720px]"
+                className="mt-10 w-full max-w-full md:max-w-[720px]"
                 style={{
                   maskImage:
                     "linear-gradient(to right, transparent, #000 10%, #000 90%, transparent)",
@@ -1443,23 +1443,25 @@ function App() {
               </div>
             </div>
 
-            <div className="relative z-20 flex justify-center pt-10 md:ml-10 md:pt-24">
-              <ProfileCard
-                name="Habil Mushani"
-                title="Full Stack Developer"
-                handle="habil"
-                status="fresh graduate"
-                contactText="Contact Me"
-                avatarUrl={asset("/avatar.png")}
-                showUserInfo
-                enableTilt={true}
-                enableMobileTilt={false}
-                onContactClick={() => {
-                  window.location.href = "mailto:habilmushani0102@gmail.com";
-                }}
-                behindGlowColor="rgba(33, 133, 213, 0.6)"
-                behindGlowEnabled
-              />
+            <div className="relative z-20 flex min-w-0 justify-center pt-10 md:ml-10 md:pt-24">
+              <div className="w-full max-w-[340px] md:max-w-none">
+                <ProfileCard
+                  name="Habil Mushani"
+                  title="Full Stack Developer"
+                  handle="habil"
+                  status="fresh graduate"
+                  contactText="Contact Me"
+                  avatarUrl={asset("/avatar.png")}
+                  showUserInfo
+                  enableTilt={true}
+                  enableMobileTilt={false}
+                  onContactClick={() => {
+                    window.location.href = "mailto:habilmushani0102@gmail.com";
+                  }}
+                  behindGlowColor="rgba(33, 133, 213, 0.6)"
+                  behindGlowEnabled
+                />
+              </div>
             </div>
           </section>
 
