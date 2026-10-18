@@ -826,6 +826,56 @@ const skillFilters = [
 const CORE_IMAGE: string | null = asset("/avatar.png");
 const CORE_LABEL = "Core intelligence";
 
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(
+    () => typeof window !== "undefined" && window.matchMedia(query).matches,
+  );
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(query);
+    const updateMatches = () => setMatches(mediaQuery.matches);
+
+    mediaQuery.addEventListener("change", updateMatches);
+    return () => mediaQuery.removeEventListener("change", updateMatches);
+  }, [query]);
+
+  return matches;
+}
+
+function getHeroFontSize() {
+  if (typeof window === "undefined" || window.innerWidth >= 768) return 92;
+
+  const context = document.createElement("canvas").getContext("2d");
+  if (!context) return Math.min(92, Math.floor((window.innerWidth - 48) / 6.5));
+
+  context.font = "900 100px Archivo";
+  const textWidth = context.measureText("Full Stack").width - 36;
+  const availableWidth = Math.max(0, window.innerWidth - 48);
+  return Math.min(92, Math.floor((availableWidth / textWidth) * 100));
+}
+
+function useHeroFontSize() {
+  const [fontSize, setFontSize] = useState(getHeroFontSize);
+
+  useEffect(() => {
+    let isMounted = true;
+    const updateFontSize = () => setFontSize(getHeroFontSize());
+    const handleResize = () => updateFontSize();
+
+    window.addEventListener("resize", handleResize);
+    document.fonts.ready.then(() => {
+      if (isMounted) updateFontSize();
+    });
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  return fontSize;
+}
+
 function SkillsSection({ isDark }: { isDark: boolean }) {
   const [group, setGroup] = useState("All tools");
   const [selected, setSelected] = useState<string | null>(null);
@@ -886,7 +936,7 @@ function SkillsSection({ isDark }: { isDark: boolean }) {
   return (
     <section
       id="skills"
-      className="mx-auto flex min-h-screen max-w-6xl snap-start flex-col px-4 md:px-8"
+      className="mx-auto flex min-h-dvh max-w-6xl snap-start flex-col px-4 md:px-8"
     >
       <div className="flex-1 py-16">
         <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-end">
@@ -897,7 +947,7 @@ function SkillsSection({ isDark }: { isDark: boolean }) {
               <span className="size-1.5 rounded-full bg-[#2185D5]" />
               Technical skills
             </p>
-            <h2 className="max-w-xl text-5xl font-bold leading-[0.95] tracking-[-0.04em] md:text-7xl">
+            <h2 className="max-w-xl text-4xl font-bold leading-[0.95] tracking-[-0.04em] sm:text-5xl md:text-7xl">
               Skills that
               <br />
               <span className="text-neutral-400 dark:text-white/35">
@@ -1037,7 +1087,7 @@ function SkillsSection({ isDark }: { isDark: boolean }) {
                     setGroup(filter);
                     setSelected(null);
                   }}
-                  className={`rounded-full px-3 py-2 text-xs transition ${
+                  className={`min-h-[44px] rounded-full px-3 py-2 text-xs transition ${
                     group === filter
                       ? "bg-[#2185D5] text-white"
                       : "border border-neutral-300 text-neutral-500 hover:text-neutral-900 dark:border-white/10 dark:text-white/50 dark:hover:text-white"
@@ -1141,6 +1191,8 @@ function useTypewriter(words: string[], speed = 110, pause = 1600) {
 
 function App() {
   const typed = useTypewriter(typedWords);
+  const heroFontSize = useHeroFontSize();
+  const isMobile = useMediaQuery("(max-width: 767px)");
 
   const [selected, setSelected] = useState<Entry | null>(null);
   const [kindFilter, setKindFilter] = useState<"all" | EntryKind>("all");
@@ -1174,8 +1226,8 @@ function App() {
     [],
   );
 
-  const dockItems = useMemo(
-    () => [
+  const dockItems = useMemo(() => {
+    const primaryItems = [
       {
         icon: <VscHome size={18} />,
         label: "Home",
@@ -1208,6 +1260,8 @@ function App() {
             .getElementById("skills")
             ?.scrollIntoView({ behavior: "smooth" }),
       },
+    ];
+    const socialItems = [
       {
         icon: <FaGithub size={20} />,
         label: "GitHub",
@@ -1245,25 +1299,29 @@ function App() {
           window.location.href = "mailto:habilmushani0102@gmail.com";
         },
       },
-      {
-        icon: (
-          <AnimatedThemeToggler
-            id="theme-toggle"
-            variant="circle"
-            duration={500}
-            theme={theme}
-            onThemeChange={setTheme}
-            tabIndex={-1}
-            aria-hidden="true"
-            className="pointer-events-none flex items-center justify-center"
-          />
-        ),
-        label: isDark ? "Mode terang" : "Mode gelap",
-        onClick: () => document.getElementById("theme-toggle")?.click(),
-      },
-    ],
-    [theme, isDark],
-  );
+    ];
+    const themeItem = {
+      icon: (
+        <AnimatedThemeToggler
+          id="theme-toggle"
+          variant="circle"
+          duration={500}
+          theme={theme}
+          onThemeChange={setTheme}
+          tabIndex={-1}
+          aria-hidden="true"
+          className="pointer-events-none flex items-center justify-center"
+        />
+      ),
+      label: isDark ? "Mode terang" : "Mode gelap",
+      onClick: () => document.getElementById("theme-toggle")?.click(),
+    };
+
+    return {
+      mobile: [...primaryItems, themeItem],
+      desktop: [...primaryItems, ...socialItems, themeItem],
+    };
+  }, [theme, isDark]);
 
   return (
     <ClickSpark
@@ -1273,7 +1331,7 @@ function App() {
       sparkCount={10}
       duration={500}
     >
-      <main className="relative h-screen snap-y snap-mandatory overflow-y-auto overflow-x-hidden bg-neutral-50 text-neutral-900 dark:bg-black dark:text-white">
+      <main className="relative h-dvh snap-y snap-proximity overflow-y-auto overflow-x-hidden bg-neutral-50 text-neutral-900 dark:bg-black dark:text-white md:snap-mandatory">
         <div className="pointer-events-none fixed inset-0 z-0">
           <ShapeGrid
             speed={0.22}
@@ -1291,7 +1349,7 @@ function App() {
         <div className="relative z-10">
           <section
             id="home"
-            className="mx-auto grid min-h-screen max-w-7xl snap-start items-start gap-0 px-6 pb-40 pt-16 md:grid-cols-[minmax(0,760px)_420px] md:justify-start md:px-12"
+            className="mx-auto grid min-h-dvh max-w-7xl snap-start items-start gap-0 px-6 pb-40 pt-16 md:grid-cols-[minmax(0,760px)_420px] md:justify-start md:px-12"
           >
             <div className="pt-10 md:pt-12">
               <div
@@ -1309,7 +1367,7 @@ function App() {
                 className="mt-4 leading-[0.9]"
                 style={{
                   fontFamily: "'Archivo', sans-serif",
-                  fontStretch: "125%",
+                  fontStretch: isMobile ? "100%" : "125%",
                 }}
               >
                 <FoldText
@@ -1322,7 +1380,7 @@ function App() {
                   ease="power3.out"
                   perspective={700}
                   creaseShading={0.55}
-                  fontSize={92}
+                  fontSize={heroFontSize}
                   fontWeight={900}
                   color={isDark ? "#f4f4f4" : "#171717"}
                 />
@@ -1336,7 +1394,7 @@ function App() {
                   ease="power3.out"
                   perspective={700}
                   creaseShading={0.55}
-                  fontSize={92}
+                  fontSize={heroFontSize}
                   fontWeight={900}
                   color={isDark ? "#8a8a8a" : "#737373"}
                 />
@@ -1407,14 +1465,14 @@ function App() {
 
           <section
             id="about"
-            className="mx-auto flex min-h-screen max-w-6xl snap-start flex-col px-4 md:px-8"
+            className="mx-auto flex min-h-dvh max-w-6xl snap-start flex-col px-4 pb-28 md:px-8 md:pb-0"
           >
             <div className="flex flex-1 items-center py-10">
-              <div className="grid w-full overflow-hidden rounded-[2rem] border border-[#2185D5]/40 bg-white/80 dark:bg-[#141416]/90 md:grid-cols-[420px_1fr]">
-                <div className="relative z-20 h-[520px] overflow-hidden md:h-[720px]">
+              <div className="grid w-full overflow-visible rounded-[2rem] border border-[#2185D5]/40 bg-white/80 dark:bg-[#141416]/90 md:grid-cols-[420px_1fr] md:overflow-hidden">
+                <div className="relative z-20 h-[440px] overflow-visible md:h-[720px] md:overflow-hidden">
                   <div className="absolute inset-0 [&>div]:!h-full [&>div]:!w-full">
                     <Lanyard
-                      position={[0, 1.7, 13]}
+                      position={isMobile ? [0, 1.2, 15] : [0, 1.7, 13]}
                       gravity={[0, -40, 0]}
                       ropeLength={0.8}
                     />
@@ -1478,7 +1536,7 @@ function App() {
 
           <section
             id="projects"
-            className="mx-auto flex min-h-screen max-w-6xl snap-start flex-col px-4 md:px-8"
+            className="mx-auto flex min-h-dvh max-w-6xl snap-start flex-col px-4 pb-28 md:px-8 md:pb-0"
           >
             <div className="flex flex-1 flex-col justify-center py-16">
               <h2 className="text-4xl font-bold md:text-5xl">
@@ -1506,7 +1564,7 @@ function App() {
                       key={value}
                       type="button"
                       onClick={() => setKindFilter(value)}
-                      className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm transition ${
+                      className={`inline-flex min-h-[44px] items-center gap-2 rounded-full px-4 py-2 text-sm transition ${
                         kindFilter === value
                           ? "bg-[#2185D5] text-white"
                           : "border border-neutral-300 text-neutral-600 hover:text-neutral-900 dark:border-white/10 dark:text-white/60 dark:hover:text-white"
@@ -1540,13 +1598,13 @@ function App() {
           <SkillsSection isDark={isDark} />
         </div>
 
-        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 text-white">
+        <div className="fixed bottom-6 left-1/2 z-50 max-w-[calc(100vw-1rem)] -translate-x-1/2 text-white">
           <Dock
-            items={dockItems}
-            className="bg-black/40 backdrop-blur-md"
-            panelHeight={68}
-            baseItemSize={50}
-            magnification={70}
+            items={isMobile ? dockItems.mobile : dockItems.desktop}
+            className="max-w-[calc(100vw-1rem)] bg-black/40 backdrop-blur-md"
+            panelHeight={isMobile ? 56 : 68}
+            baseItemSize={isMobile ? 40 : 50}
+            magnification={isMobile ? 40 : 70}
           />
         </div>
 

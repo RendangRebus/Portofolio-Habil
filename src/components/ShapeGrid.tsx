@@ -39,6 +39,8 @@ const ShapeGrid: React.FC<ShapeGridProps> = ({
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
+    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let prefersReducedMotion = motionPreference.matches;
 
     const isHex = shape === 'hexagon';
     const isTri = shape === 'triangle';
@@ -52,7 +54,6 @@ const ShapeGrid: React.FC<ShapeGridProps> = ({
       numSquaresY.current = Math.ceil(canvas.height / squareSize) + 1;
     };
 
-    window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
     const drawHex = (cx: number, cy: number, size: number) => {
@@ -222,35 +223,45 @@ const ShapeGrid: React.FC<ShapeGridProps> = ({
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     };
 
+    const handleResize = () => {
+      resizeCanvas();
+      drawGrid();
+    };
+    window.addEventListener('resize', handleResize);
+
     const updateAnimation = () => {
-      const effectiveSpeed = Math.max(speed, 0.1);
+      const effectiveSpeed = prefersReducedMotion ? 0 : Math.max(speed, 0.1);
       const wrapX = isHex ? hexHoriz * 2 : squareSize;
       const wrapY = isHex ? hexVert : isTri ? squareSize * 2 : squareSize;
 
-      switch (direction) {
-        case 'right':
-          gridOffset.current.x = (gridOffset.current.x - effectiveSpeed + wrapX) % wrapX;
-          break;
-        case 'left':
-          gridOffset.current.x = (gridOffset.current.x + effectiveSpeed + wrapX) % wrapX;
-          break;
-        case 'up':
-          gridOffset.current.y = (gridOffset.current.y + effectiveSpeed + wrapY) % wrapY;
-          break;
-        case 'down':
-          gridOffset.current.y = (gridOffset.current.y - effectiveSpeed + wrapY) % wrapY;
-          break;
-        case 'diagonal':
-          gridOffset.current.x = (gridOffset.current.x - effectiveSpeed + wrapX) % wrapX;
-          gridOffset.current.y = (gridOffset.current.y - effectiveSpeed + wrapY) % wrapY;
-          break;
-        default:
-          break;
+      if (!prefersReducedMotion) {
+        switch (direction) {
+          case 'right':
+            gridOffset.current.x = (gridOffset.current.x - effectiveSpeed + wrapX) % wrapX;
+            break;
+          case 'left':
+            gridOffset.current.x = (gridOffset.current.x + effectiveSpeed + wrapX) % wrapX;
+            break;
+          case 'up':
+            gridOffset.current.y = (gridOffset.current.y + effectiveSpeed + wrapY) % wrapY;
+            break;
+          case 'down':
+            gridOffset.current.y = (gridOffset.current.y - effectiveSpeed + wrapY) % wrapY;
+            break;
+          case 'diagonal':
+            gridOffset.current.x = (gridOffset.current.x - effectiveSpeed + wrapX) % wrapX;
+            gridOffset.current.y = (gridOffset.current.y - effectiveSpeed + wrapY) % wrapY;
+            break;
+          default:
+            break;
+        }
       }
 
       updateCellOpacities();
       drawGrid();
-      requestRef.current = requestAnimationFrame(updateAnimation);
+      if (!prefersReducedMotion) {
+        requestRef.current = requestAnimationFrame(updateAnimation);
+      }
     };
 
     const updateCellOpacities = () => {
@@ -379,6 +390,8 @@ const ShapeGrid: React.FC<ShapeGridProps> = ({
           hoveredSquareRef.current = { x: col, y: row };
         }
       }
+
+      if (prefersReducedMotion) drawGrid();
     };
 
     const handleMouseLeave = () => {
@@ -387,6 +400,7 @@ const ShapeGrid: React.FC<ShapeGridProps> = ({
         if (trailCells.current.length > hoverTrailAmount) trailCells.current.length = hoverTrailAmount;
       }
       hoveredSquareRef.current = null;
+      if (prefersReducedMotion) drawGrid();
     };
 
     canvas.addEventListener('mousemove', handleMouseMove);
@@ -395,7 +409,7 @@ const ShapeGrid: React.FC<ShapeGridProps> = ({
     let isPageVisible = !document.hidden;
 
     const tryStart = () => {
-      if (isVisible && isPageVisible && !requestRef.current) {
+      if (isVisible && isPageVisible && !prefersReducedMotion && !requestRef.current) {
         requestRef.current = requestAnimationFrame(updateAnimation);
       }
     };
@@ -409,7 +423,11 @@ const ShapeGrid: React.FC<ShapeGridProps> = ({
     const io = new IntersectionObserver(
       ([entry]) => {
         isVisible = entry.isIntersecting;
-        isVisible ? tryStart() : tryStop();
+        if (isVisible) {
+          tryStart();
+        } else {
+          tryStop();
+        }
       },
       { threshold: 0 }
     );
@@ -417,17 +435,33 @@ const ShapeGrid: React.FC<ShapeGridProps> = ({
 
     const onVisibility = () => {
       isPageVisible = !document.hidden;
-      isPageVisible ? tryStart() : tryStop();
+      if (isPageVisible) {
+        tryStart();
+      } else {
+        tryStop();
+      }
+    };
+    const onMotionPreferenceChange = (event: MediaQueryListEvent) => {
+      prefersReducedMotion = event.matches;
+      if (prefersReducedMotion) {
+        tryStop();
+        drawGrid();
+      } else {
+        tryStart();
+      }
     };
     document.addEventListener('visibilitychange', onVisibility);
+    motionPreference.addEventListener('change', onMotionPreferenceChange);
 
+    drawGrid();
     tryStart();
 
     return () => {
-      window.removeEventListener('resize', resizeCanvas);
+      window.removeEventListener('resize', handleResize);
       tryStop();
       io.disconnect();
       document.removeEventListener('visibilitychange', onVisibility);
+      motionPreference.removeEventListener('change', onMotionPreferenceChange);
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('mouseleave', handleMouseLeave);
     };
