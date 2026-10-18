@@ -845,13 +845,7 @@ function useMediaQuery(query: string) {
 function getHeroFontSize() {
   if (typeof window === "undefined" || window.innerWidth >= 768) return 92;
 
-  const context = document.createElement("canvas").getContext("2d");
-  if (!context) return Math.min(92, Math.floor((window.innerWidth - 48) / 6.5));
-
-  context.font = "900 100px Archivo";
-  const textWidth = context.measureText("Full Stack").width - 36;
-  const availableWidth = Math.max(0, window.innerWidth - 48);
-  return Math.min(92, Math.floor((availableWidth / textWidth) * 100));
+  return Math.min(92, Math.floor((window.innerWidth - 48) / 6.4));
 }
 
 function useHeroFontSize() {
@@ -1364,7 +1358,7 @@ function App() {
               </h1>
 
               <div
-                className="mt-4 max-w-full leading-[0.9]"
+                className="mt-4 max-w-full whitespace-nowrap leading-[0.9]"
                 style={{
                   fontFamily: "'Archivo', sans-serif",
                   fontStretch: isMobile ? "100%" : "125%",
@@ -1602,10 +1596,17 @@ function App() {
           <SkillsSection isDark={isDark} />
         </div>
 
-        <div className="fixed bottom-6 left-1/2 z-50 max-w-[calc(100vw-1rem)] -translate-x-1/2 text-white">
+        <div
+          data-no-spark
+          className="fixed bottom-[max(1.5rem,env(safe-area-inset-bottom))] left-1/2 z-50 max-w-[calc(100vw-1rem)] -translate-x-1/2 text-white"
+        >
           <Dock
             items={isMobile ? dockItems.mobile : dockItems.desktop}
-            className="max-w-[calc(100vw-1rem)] bg-black/40 backdrop-blur-md"
+            className={
+              isMobile
+                ? "max-w-[calc(100vw-1rem)] border border-white/10 bg-black/75 backdrop-blur-xl"
+                : "max-w-[calc(100vw-1rem)] bg-black/40 backdrop-blur-md"
+            }
             panelHeight={isMobile ? 56 : 68}
             baseItemSize={isMobile ? 40 : 50}
             magnification={isMobile ? 40 : 70}

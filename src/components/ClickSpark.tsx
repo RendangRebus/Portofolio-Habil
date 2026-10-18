@@ -143,6 +143,12 @@ const ClickSpark: React.FC<ClickSparkProps> = ({
   const handleClick = (e: React.MouseEvent<HTMLDivElement>): void => {
     // Abaikan click buatan seperti element.click()
     if (e.clientX === 0 && e.clientY === 0) return;
+    if (
+      e.target instanceof Element &&
+      e.target.closest("[data-no-spark]")
+    ) {
+      return;
+    }
 
     const canvas = canvasRef.current;
     if (!canvas) return;
