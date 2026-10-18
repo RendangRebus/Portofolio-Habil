@@ -87,9 +87,10 @@ export default function Lanyard({
   }, []);
 
   return (
-    <div className="relative z-0 flex h-dvh w-full origin-center transform scale-100 items-center justify-center">
+    <div className="relative z-0 flex h-full w-full origin-center transform scale-100 items-center justify-center">
       <Canvas
         camera={{ position, fov }}
+        style={{ touchAction: "none" }}
         dpr={[1, isMobile ? 1.5 : 2]}
         gl={{ alpha: transparent }}
         onCreated={({ gl }) =>

@@ -1471,13 +1471,15 @@ function App() {
           >
             <div className="flex flex-1 items-center py-10">
               <div className="grid w-full overflow-visible rounded-[2rem] border border-[#2185D5]/40 bg-white/80 dark:bg-[#141416]/90 md:grid-cols-[420px_1fr] md:overflow-hidden">
-                <div className="relative z-20 h-[440px] overflow-visible md:h-[720px] md:overflow-hidden">
-                  <div className="absolute inset-0 [&>div]:!h-full [&>div]:!w-full">
-                    <Lanyard
-                      position={isMobile ? [0, 1.2, 15] : [0, 1.7, 13]}
-                      gravity={[0, -40, 0]}
-                      ropeLength={0.8}
-                    />
+                <div className="relative z-20 h-[440px] overflow-hidden md:h-[720px]">
+                  <div className="absolute inset-0">
+                    <div className="mx-auto h-full w-[65%] touch-none md:w-full [&>div]:!h-full [&>div]:!w-full">
+                      <Lanyard
+                        position={isMobile ? [0, 1.2, 15] : [0, 1.7, 13]}
+                        gravity={[0, -40, 0]}
+                        ropeLength={0.8}
+                      />
+                    </div>
                   </div>
                 </div>
 
